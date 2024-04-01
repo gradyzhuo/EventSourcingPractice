@@ -26,7 +26,7 @@ extension ProductShiped: Event {
     }
     
     public var description: String{
-        return "The Product '\(sku)' shipped \(quantity) at \(datetime.formatted(.iso8601))."
+        return "The Product '\(sku)' shipped \(quantity) at \(datetime.description)."
     }
 }
 
@@ -50,7 +50,7 @@ extension ProductReceived: Event{
     }
     
     public var description: String{
-        return "The Product '\(sku)' received \(quantity) at \(datetime.formatted(.iso8601))."
+        return "The Product '\(sku)' received \(quantity) at \(datetime.description)."
     }
 }
 
@@ -75,6 +75,6 @@ extension InventoryAdjusted: Event {
     }
     
     public var description: String{
-        return "The Product '\(sku)' adjust \(quantity) by \(reason) at \(datetime.formatted(.iso8601)). "
+        return "The Product '\(sku)' adjust \(quantity) by \(reason) at \(datetime.description). "
     }
 }
