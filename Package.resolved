@@ -1,5 +1,5 @@
 {
-  "originHash" : "65038a98fa2fd96727e879c60c7ad53eed930e839d9950c88a77f6f43bb08615",
+  "originHash" : "cee08a6dff051dadcc0fa506a963dc9d2d60a1cc9b29a14cd78dcfba63e0ae5f",
   "pins" : [
     {
       "identity" : "anycodable",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/gradyzhuo/EventStoreDB-Swift.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "98997c42a2836fcefd0bb420cdc3927b6bcbbff6"
+        "branch" : "dev",
+        "revision" : "b3b1a9072224017cac5265bb20b44c1d4a632ec5"
       }
     },
     {

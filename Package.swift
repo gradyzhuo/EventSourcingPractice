@@ -15,7 +15,7 @@ let package = Package(
             targets: ["EventSourcingPractice"])
     ],
     dependencies: [
-        .package(url: "https://github.com/gradyzhuo/EventStoreDB-Swift.git", branch: "main")
+        .package(url: "https://github.com/gradyzhuo/EventStoreDB-Swift.git", branch: "dev")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.

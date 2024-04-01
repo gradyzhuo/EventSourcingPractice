@@ -56,7 +56,8 @@ public struct WarehouseProduct: Entity{
         if quantity > quantityOnHand {
             throw EventSourcingError.invalidDomainException(message: "Ah... we don't have enough product to ship?")
         }
-        try add(event: ProductShiped(sku: sku, quantity: quantity, datetime: .init()))
+        let event = ProductShiped(sku: sku, quantity: quantity, datetime: .init())
+        try add(event: event)
     }
     
     public mutating func receive(quantity: Int) throws {
