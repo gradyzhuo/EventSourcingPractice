@@ -7,40 +7,22 @@
 
 import Foundation
 import EventSourcingPractice
-
+import EventStoreDB
 
 @main
-struct Publisher {
-    
+struct ESDB {
     public static func main() async throws{
+        try EventStoreDB.using(settings: .parse(connectionString: "esdb://localhost:2113?tls=false"))
+        var executor: GenericExecutor<WarehouseProductEventStoreRepository> = try .init(repository: .init())
         
-        var product = WarehouseProduct(sku: "ABC1234")
-        try product.receive(quantity: 900)
-        print("product:", product.quantityOnHand)
-        try product.receive(quantity: 100)
-        try product.ship(quantity: 50)
+        executor.add(command: ReceiveCommand(repository: executor.repository))
+        executor.add(command: ShipCommand(repository: executor.repository))
+        executor.add(command: AdjustCommand(repository: executor.repository))
+        executor.add(command: HandonCommand(repository: executor.repository))
+        executor.add(command: ShowEventsCommand(repository: executor.repository))
         
-        print("product:", product.quantityOnHand)
+        try await executor.execute()
         
-        var repo = WarehouseProductInMemoryRepository()
-        repo.save(product: product)
-        
-        var p = try repo.get(sku: "ABC1234")
-        print("quantity:", p.quantityOnHand)
-        for event in p.events {
-            switch event{
-            case let receivedEvent as ProductReceived:
-                try p.receive(quantity: receivedEvent.quantity)
-            case let shipedEvent as ProductShiped:
-                try p.ship(quantity: shipedEvent.quantity)
-            case let event as InventoryAdjusted:
-                try p.adjustInventory(quantity: event.quantity, reason: "")
-            default:
-                continue
-            }
-        }
-        print("quantity:", p.quantityOnHand)
-//        print(x)
     }
     
 

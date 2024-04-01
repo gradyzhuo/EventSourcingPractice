@@ -6,3 +6,8 @@
 //
 
 import Foundation
+
+public enum EventSourcingError: Error {
+    case invalidDomainException(message: String)
+    case invalidOperationException(message: String)
+}
