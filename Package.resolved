@@ -16,7 +16,7 @@
       "location" : "https://github.com/gradyzhuo/EventStoreDB-Swift.git",
       "state" : {
         "branch" : "dev",
-        "revision" : "5d040c24025b96ca3afc786980831fd0d3c753a0"
+        "revision" : "20fd5c8bc99385965e006bbdd522dcb2fe5db68a"
       }
     },
     {
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/grpc/grpc-swift.git",
       "state" : {
-        "revision" : "5d0cf1c7b2e641e3a8961089e7e4672f4fe8abac",
-        "version" : "1.21.1"
+        "revision" : "393b02b1c39cc82fb24e57f24fa446f43e8124c9",
+        "version" : "1.22.0"
       }
     },
     {

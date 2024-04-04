@@ -116,7 +116,7 @@ public struct ShowEventsCommand: Command {
     }
     
     public func perform(product: inout WarehouseProduct) async throws{
-        let product = try await repository.get(sku: product.sku)
+        let product = try await repository.get(sku: product.id)
         for event in product.events{
             print(event)
         }

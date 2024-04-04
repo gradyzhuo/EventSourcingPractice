@@ -20,7 +20,9 @@ cd server
 sudo docker compose up -d 
 ```
 
+### 啟動:
 ```swift 
+cd ..
 swift run ESDB
 ```
 

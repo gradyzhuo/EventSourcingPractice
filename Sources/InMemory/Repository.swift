@@ -18,27 +18,26 @@ public class WarehouseProductInMemoryRepository: WarehouseProductRepository{
     }
     
     public func get(sku: String) async throws -> WarehouseProduct {
-        return try await find(id: sku) ?? .init(sku: sku)
+        return try await get(id: sku)
     }
     
     public func save(product: WarehouseProduct) async throws {
         try await save(entity: product)
     }
     
-    
 }
 
 extension WarehouseProductInMemoryRepository: Repository {
+    public typealias ReadEvents = [any Event]
     public typealias AggregateRoot = WarehouseProduct
     
-    public func find(id: String) async throws -> WarehouseProduct? {
-        
-        guard let events = _inMemoryStreams[id] else {
-            return nil
-        }
-        
+    public func find(id: String) throws -> [any Event] {
+        return _inMemoryStreams[id] ?? []
+    }
+    
+    public func get(id: String) async throws -> WarehouseProduct {
         var warehouseProduct = WarehouseProduct(sku: id)
-        for event in events {
+        for event in try find(id: id) {
             try warehouseProduct.add(event: event)
         }
         return warehouseProduct
@@ -46,9 +45,9 @@ extension WarehouseProductInMemoryRepository: Repository {
     
     public func save(entity: WarehouseProduct) async throws {
         if try await contains(id: entity.id){
-            _inMemoryStreams[entity.sku]?.append(contentsOf: entity.events)
+            _inMemoryStreams[entity.id]?.append(contentsOf: entity.events)
         }else{
-            _inMemoryStreams[entity.sku] = entity.events
+            _inMemoryStreams[entity.id] = entity.events
         }
         
     }
