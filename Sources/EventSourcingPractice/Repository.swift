@@ -10,8 +10,10 @@ import EventStoreDB
 import EventSourcing
 
 public protocol WarehouseProductRepository{
+    func exists(sku: String) async throws -> Bool
     func get(sku: String) async throws -> WarehouseProduct
     func save(product: WarehouseProduct) async throws
+    func delete(sku: String) async throws 
 }
 
 

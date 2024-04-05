@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import EventStoreDB
 
 //(R) 接收商品
 //(S) 商品派送
@@ -17,7 +18,7 @@ public protocol Command {
     var option: String { get }
     var name: String { get }
     
-    func perform(product: inout WarehouseProduct) async throws
+    func perform(sku: String) async throws
 }
 
 func inputQuantity(prompt: String) throws ->Int{
@@ -38,15 +39,25 @@ func inputString(prompt: String) throws ->String{
 }
 
 public struct ReceiveCommand: Command {
-    public let option: String = "r"
+    public let option: String
     public let name: String = "接收商品"
     public let repository: WarehouseProductRepository
     
-    public init(repository: WarehouseProductRepository) {
+    public init(option: String, repository: WarehouseProductRepository) {
+        self.option = option
         self.repository = repository
     }
     
-    public func perform(product: inout WarehouseProduct) async throws{
+    public func perform(sku: String) async throws{
+        var product: WarehouseProduct
+        do{
+            product = try await repository.get(sku: sku)
+            product.clearDomainEvents()
+        
+        } catch ClientError.streamNotFound(_) {
+            product = .init(sku: sku)
+        }
+        
         let quantity = try inputQuantity(prompt: "請輸入接收商品數量：")
         try product.receive(quantity: quantity)
         try await repository.save(product: product)
@@ -55,36 +66,53 @@ public struct ReceiveCommand: Command {
 }
 
 public struct ShipCommand: Command {
-    public let option: String = "s"
+    public let option: String
     public let name: String = "商品派送"
     public let repository: WarehouseProductRepository
     
-    public init(repository: WarehouseProductRepository) {
+    public init(option: String, repository: WarehouseProductRepository) {
+        self.option = option
         self.repository = repository
     }
     
-    public func perform(product: inout WarehouseProduct) async throws{
+    public func perform(sku: String) async throws{
         do{
+            var product: WarehouseProduct = try await repository.get(sku: sku)
+            product.clearDomainEvents()
+            
             let quantity = try inputQuantity(prompt: "請輸入出貨商品數量：")
             try product.ship(quantity: quantity)
             try await repository.save(product: product)
-        } catch let EventSourcingError.invalidDomainException(message: message){
+        } catch EventSourcingError.invalidDomainException(let message){
             print(message)
+        } catch ClientError.streamNotFound(_) {
+            print("該商品 \(sku) 不存在")
         }
-        product.clearDomainEvents()
+        
     }
 }
 
 public struct AdjustCommand: Command {
-    public let option: String = "i"
+    public let option: String
     public let name: String = "調整商品數量"
     public let repository: WarehouseProductRepository
     
-    public init(repository: WarehouseProductRepository) {
+    public init(option: String, repository: WarehouseProductRepository) {
+        self.option = option
         self.repository = repository
     }
     
-    public func perform(product: inout WarehouseProduct) async throws{
+    public func perform(sku: String) async throws{
+        var product: WarehouseProduct
+        do{
+            product = try await repository.get(sku: sku)
+            product.clearDomainEvents()
+        
+        } catch ClientError.streamNotFound(_) {
+            print("該商品 \(sku) 不存在")
+            return
+        }
+        
         let quantity = try inputQuantity(prompt: "請輸入要調整商品的數量：")
         let reason = try inputString(prompt: "請輸入調整的理由：")
         try product.adjustInventory(quantity: quantity, reason: reason)
@@ -93,32 +121,69 @@ public struct AdjustCommand: Command {
 }
 
 public struct HandonCommand: Command {
-    public let option: String = "n"
+    public let option: String
     public let name: String = "現在存貨數量"
     public let repository: WarehouseProductRepository
     
-    public init(repository: WarehouseProductRepository) {
+    public init(option: String, repository: WarehouseProductRepository) {
+        self.option = option
         self.repository = repository
     }
     
-    public func perform(product: inout WarehouseProduct) async throws{
-        print("現在商品的數量:", product.quantityOnHand)
+    public func perform(sku: String) async throws{
+        do{
+            let product = try await repository.get(sku: sku)
+            print("現在商品的數量:", product.quantityOnHand)
+        } catch ClientError.streamNotFound(_) {
+            print("該商品 \(sku) 不存在")
+            return
+        }
     }
 }
 
 public struct ShowEventsCommand: Command {
-    public let option: String = "e"
+    public let option: String
     public let name: String = "全部事件"
     public let repository: WarehouseProductRepository
     
-    public init(repository: WarehouseProductRepository) {
+    public init(option: String, repository: WarehouseProductRepository) {
+        self.option = option
         self.repository = repository
     }
     
-    public func perform(product: inout WarehouseProduct) async throws{
-        let product = try await repository.get(sku: product.id)
-        for event in product.events{
-            print(event)
+    public func perform(sku: String) async throws{
+        do{
+            let product = try await repository.get(sku: sku)
+            for event in product.events{
+                print(event)
+            }
+        } catch ClientError.streamNotFound(_) {
+            print("該商品 \(sku) 不存在")
+            return
         }
+        
+        
+    }
+}
+
+public struct DeleteCommand: Command {
+    public let option: String
+    public let name: String = "刪除商品"
+    public let repository: WarehouseProductRepository
+    
+    public init(option: String, repository: WarehouseProductRepository) {
+        self.option = option
+        self.repository = repository
+    }
+    
+    public func perform(sku: String) async throws{
+        do{
+            try await repository.delete(sku: sku)
+            print("商品編號\(sku) 已刪除")
+        } catch ClientError.streamNotFound(_) {
+            print("該商品 \(sku) 不存在")
+            return
+        }
+        
     }
 }

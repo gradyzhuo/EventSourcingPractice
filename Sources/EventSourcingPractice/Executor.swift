@@ -88,10 +88,8 @@ extension GenericExecutor where Repository.AggregateRoot == WarehouseProduct{
                 continue
             }
             
-            var product: WarehouseProduct = try await repository.get(id: sku)
-            product.clearDomainEvents()
+            try await command.perform(sku: sku)
             
-            try await command.perform(product: &product)
  
         } while true
         
